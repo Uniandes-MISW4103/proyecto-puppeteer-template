@@ -1,0 +1,31 @@
+{
+  "name": "misw-4103-puppeteer",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": "",
+  "description": "Repositorio base para el uso Pruebas Automatizadas utilizando Puppeteer",
+  "keywords": [
+    "puppeteer",
+    "misw"
+  ],
+  "main": "jset-puppeteer.config.js",
+  "directories": {
+    "test": "__tests__"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "prepare": "",
+    "test": "HEADLESS=true jest",
+    "test:ui": "HEADLESS=false jest"
+  },
+  "dependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-puppeteer": "^11.0.0",
+    "puppeteer": "^24.4.0"
+  }
+}
