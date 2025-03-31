@@ -1,0 +1,6 @@
+# Puppeteer
+node_modules/
+/test-results/
+
+*.png
+*.html
