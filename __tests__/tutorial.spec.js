@@ -24,7 +24,7 @@ describe("Tutorial Puppeteer", () => {
   });
 
   it("Test form feedback", async () => {
-    page.click("button.btn.btn-primary");
+    await page.click("button.btn.btn-primary");
     await page.screenshot({ path: `${screenshotPath}/form-feedback.png` });
     const feedback = await page.$$("div.invalid-feedback");
     expect(feedback.length).toEqual(4);
@@ -38,6 +38,7 @@ describe("Tutorial Puppeteer", () => {
 
     await page.click("button.btn.btn-primary");
 
+    await page.waitForSelector("div.alert.alert-success");
     await page.screenshot({ path: `${screenshotPath}/success-feedback.png` });
 
     await expect(page).toMatchTextContent("Registration successful");
