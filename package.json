@@ -13,14 +13,13 @@
     "test": "__tests__"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24"
   },
   "scripts": {
     "prepare": "",
     "test": "HEADLESS=true jest",
     "test:ui": "HEADLESS=false jest"
   },
-  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
