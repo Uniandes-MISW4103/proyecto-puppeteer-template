@@ -61,7 +61,8 @@ Las capturas de pantalla quedan en `test-results/` (en el `.gitignore`).
 - **`jest.config.js`**: usa el preset `jest-puppeteer`, registra las aserciones de
   `expect-puppeteer` (`toMatchElement`, `toMatchTextContent`, …) y define variables globales para las
   pruebas: `baseUrl` (por defecto el demo de StackBlitz; cámbienla por la URL de su aplicación, por
-  ejemplo `http://localhost:2368` para Ghost) y `screenshotPath` (`./test-results`).
+  ejemplo `http://localhost:2368` para Ghost) y `screenshotPath` (`./test-results`). `testTimeout`
+  es de 60 s por prueba y por _hook_: el valor por defecto de Jest (5 s) es corto para pruebas E2E.
 - **`jest-puppeteer.config.js`**: lanza Chrome en modo headless salvo que `HEADLESS=false` (lo que
   hace `test:ui`) y crea un contexto de navegación aislado (incógnito) por archivo de pruebas.
 
