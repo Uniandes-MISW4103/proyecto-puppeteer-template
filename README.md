@@ -1,77 +1,96 @@
 # Proyecto Base: Pruebas End to End con Puppeteer
 
-Puppeteer es una biblioteca que proporciona una API de alto nivel para controlar navegadores basados en Chromium. Es útil para pruebas E2E y tareas de scraping.
+[Puppeteer](https://pptr.dev) es una librería de Node.js que controla Chrome (o Firefox) a través
+del protocolo de automatización del navegador. En este módulo se usa junto a
+[Jest](https://jestjs.io) mediante [jest-puppeteer](https://github.com/argos-ci/jest-puppeteer),
+que abre el navegador antes de las pruebas y expone las variables globales `browser` y `page`.
 
-Este repositorio cuenta con la configuración base para utilizar Puppeteer junto a Jest para la automatización de pruebas E2E.
+Este módulo contiene esa configuración base y un ejemplo que pueden usar como punto de partida para
+las pruebas E2E del proyecto.
 
-## Requisitos Básicos
+## Requisitos
 
-- Node.js (versión 22 o superior). Recomendamos utilizar la versión `lts/jod`.
-- npm para la gestión de dependencias.
+- Node.js 24 (`lts/krypton`). El módulo incluye un `.nvmrc`, por lo que pueden usar `nvm use`.
+- npm (incluido con Node.js).
+- Navegador: al instalar, Puppeteer descarga automáticamente la versión de Chrome for Testing que
+  le corresponde (en `~/.cache/puppeteer`).
 
 ## Instalación
 
-Desde la **raíz del repositorio**:
+Desde la **raíz del repositorio** del proyecto:
 
 ```bash
 npm run puppeteer:install
 ```
 
-O bien, desde el directorio del módulo:
+`puppeteer:prepare` existe por consistencia con los demás módulos, pero no hace nada: el navegador se
+descarga durante la instalación.
 
-```bash
-npm install
+> [!IMPORTANT]
+> Instalen siempre desde la raíz. `puppeteer:install` deja las dependencias del módulo en su propia
+> carpeta `node_modules`, aisladas de los demás módulos. Un `npm install` dentro de la carpeta del
+> módulo instala en la raíz del repositorio y modifica el `package-lock.json` raíz sin ese aislamiento.
+
+## Ejecución
+
+| Acción | Desde la raíz | Desde `e2e/misw-4103-puppeteer` |
+|---|---|---|
+| Ejecutar las pruebas (headless) | `npm run puppeteer:test` | `npm test` |
+| Ejecutar viendo el navegador | `npm run puppeteer:ui` | `npm run test:ui` |
+
+Para pasar opciones a Jest ejecuten desde la carpeta del módulo, por ejemplo
+`npx jest __tests__/tutorial.spec.js`.
+
+## Estructura
+
+```plaintext
+misw-4103-puppeteer/
+├── .nvmrc
+├── package.json
+├── babel.config.js             # permite usar import/export en las pruebas
+├── jest.config.js              # preset jest-puppeteer y variables globales
+├── jest-puppeteer.config.js    # cómo se lanza el navegador
+└── __tests__/
+    └── tutorial.spec.js        # ejemplo incluido
 ```
 
-## Ejecución de Pruebas
-
-Desde la **raíz del repositorio**:
-
-- Para ejecutar las pruebas en modo headless:
-
-  ```bash
-  npm run puppeteer:test
-  ```
-
-- Para ejecutar las pruebas con interfaz gráfica:
-
-  ```bash
-  npm run puppeteer:ui
-  ```
-
-O bien, desde el directorio del módulo:
-
-- Para ejecutar las pruebas en modo headless:
-
-  ```bash
-  npm test
-  ```
-
-- Para ejecutar las pruebas con interfaz gráfica:
-
-  ```bash
-  npm run test:ui
-  ```
+Las capturas de pantalla quedan en `test-results/` (en el `.gitignore`).
 
 ## Configuración
 
-### Configuración de Jest (`jest.config.js`)
+- **`jest.config.js`**: usa el preset `jest-puppeteer`, registra las aserciones de
+  `expect-puppeteer` (`toMatchElement`, `toMatchTextContent`, …) y define variables globales para las
+  pruebas: `baseUrl` (por defecto el demo de StackBlitz; cámbienla por la URL de su aplicación, por
+  ejemplo `http://localhost:2368` para Ghost) y `screenshotPath` (`./test-results`).
+- **`jest-puppeteer.config.js`**: lanza Chrome en modo headless salvo que `HEADLESS=false` (lo que
+  hace `test:ui`) y crea un contexto de navegación aislado (incógnito) por archivo de pruebas.
 
-El archivo `jest.config.js` incluye la configuración básica para Jest con Puppeteer:
+## Ejemplo incluido
 
-- **Preset**: Se utiliza `jest-puppeteer` como framework base.
-- **Archivos de configuración adicionales**: Se incluye `expect-puppeteer` para extender las funcionalidades de las pruebas.
-- **Variables globales**: Puedes agregar y modificar las variables globales de acuerdo a las necesidades de tus pruebas. Variables predefinidas:
-  - `baseUrl`: URL base para las pruebas: `https://angular-6-registration-login-example.stackblitz.io`.
-  - `screenshotPath`: Ruta para guardar capturas de pantalla: `./test-results`.
+`__tests__/tutorial.spec.js` prueba el demo
+[angular-6-registration-login-example](https://angular-6-registration-login-example.stackblitz.io)
+alojado en StackBlitz. Antes de cada prueba abre `/register` y hace clic en el botón con el que
+StackBlitz inicia el proyecto. Las pruebas verifican:
 
-### Configuración de Puppeteer (`jest-puppeteer.config.js`)
+1. La navegación entre registro e inicio de sesión (`/login` ↔ `/register`), esperando a que el
+   _router_ de la aplicación cambie la URL antes de verificarla.
+2. Que enviar el formulario vacío muestra los 4 mensajes de validación.
+3. El registro de un usuario y el inicio de sesión con él ("Hi Monitor!").
 
-El archivo `jest-puppeteer.config.js` define la configuración para Puppeteer:
+## Solución de problemas
 
-- **Modo de lanzamiento**:
-  - `headless`: Determinado por la variable de entorno `HEADLESS`. Si no está configurada como `false`, Puppeteer se ejecutará en modo headless.
-  - `browser`: Se utiliza el navegador `chrome` por defecto.
-- **Contexto del navegador**: Se configura el contexto como `incognito` para cada prueba.
+- **`Could not find Chrome (ver. …)`**: la descarga del navegador no se ejecutó durante la
+  instalación; ejecuten `npx puppeteer browsers install chrome` desde la carpeta del módulo.
+- **`npm warn install-scripts … puppeteer`**: npm 11 avisa que Puppeteer ejecuta un script al
+  instalarse (la descarga de Chrome). Es esperado.
+- **Linux ARM64**: Chrome for Testing no tiene versión para esa plataforma; instalen Chromium del
+  sistema y definan `PUPPETEER_EXECUTABLE_PATH` (por ejemplo `/usr/bin/chromium`).
+- **Falla el `beforeEach`**: el demo es un sitio externo; verifiquen que carga en el navegador.
+- **Advertencia `EBADENGINE`**: están usando una versión de Node.js anterior a la 24.
 
-Con estas configuraciones, puedes personalizar y ejecutar pruebas E2E de manera eficiente.
+## Referencias
+
+- [Documentación de Puppeteer](https://pptr.dev/guides/what-is-puppeteer)
+- [jest-puppeteer](https://github.com/argos-ci/jest-puppeteer) y
+  [expect-puppeteer](https://github.com/argos-ci/jest-puppeteer/tree/main/packages/expect-puppeteer)
+- [Documentación de Jest](https://jestjs.io/docs/getting-started)
