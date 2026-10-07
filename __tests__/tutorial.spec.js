@@ -1,6 +1,10 @@
 import "jest-puppeteer";
 
 describe("Tutorial Puppeteer", () => {
+  /** Waits until the app's router shows `url` (router links change the URL without a page load). */
+  const waitForUrl = (url) =>
+    page.waitForFunction((expected) => window.location.href === expected, {}, url);
+
   beforeAll(async () => {
     const fs = require("fs");
     fs.mkdirSync(screenshotPath, { recursive: true });
@@ -13,18 +17,21 @@ describe("Tutorial Puppeteer", () => {
   });
 
   it("Test links between registration and login page", async () => {
-    await page.waitForSelector("button");
+    await page.waitForSelector("a.btn.btn-link");
     await page.click("a.btn.btn-link");
+    await waitForUrl(`${baseUrl}/login`);
     await page.screenshot({ path: `${screenshotPath}/cancel.png` });
     expect(page.url()).toEqual(`${baseUrl}/login`);
 
     await page.click("a.btn.btn-link");
+    await waitForUrl(`${baseUrl}/register`);
     await page.screenshot({ path: `${screenshotPath}/register.png` });
     expect(page.url()).toEqual(`${baseUrl}/register`);
   });
 
   it("Test form feedback", async () => {
     await page.click("button.btn.btn-primary");
+    await page.waitForSelector("div.invalid-feedback");
     await page.screenshot({ path: `${screenshotPath}/form-feedback.png` });
     const feedback = await page.$$("div.invalid-feedback");
     expect(feedback.length).toEqual(4);
