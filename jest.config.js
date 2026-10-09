@@ -1,3 +1,6 @@
+/** Configuración de la aplicación bajo pruebas, leída del .env del repositorio (ver abp.cjs). */
+const abp = require("./abp.cjs");
+
 /** @type {import('jest').Config} */
 module.exports = {
   /** Indica al framework preestablecido que se utiliza como base para la configuración de Jest. */
@@ -9,9 +12,13 @@ module.exports = {
    */
   testTimeout: 60000,
 
-  /** Variables globales para utilizar en los conjuntos de pruebas. */
+  /**
+   * Variables globales para utilizar en los conjuntos de pruebas: `baseUrl` es la URL de la aplicación
+   * bajo pruebas y `abp`, sus variables del .env (por ejemplo, `abp.ABP_ADMIN_EMAIL`).
+   */
   globals: {
-    baseUrl: "https://angular-6-registration-login-example.stackblitz.io",
+    baseUrl: abp.ABP_URL,
+    abp,
     screenshotPath: "./test-results",
   },
 };

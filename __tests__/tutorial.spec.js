@@ -1,5 +1,12 @@
 import "jest-puppeteer";
 
+// Example on an external demo (not the application under test): registration and login with the
+// administrator credentials of the repository's .env (the `abp` global, see jest.config.js).
+const DEMO_URL = "https://angular-6-registration-login-example.stackblitz.io";
+const [firstName, ...lastName] = abp.ABP_ADMIN_NAME.split(" ");
+const username = abp.ABP_ADMIN_EMAIL;
+const password = abp.ABP_ADMIN_PASSWORD;
+
 describe("Tutorial Puppeteer", () => {
   /** Waits until the app's router shows `url` (router links change the URL without a page load). */
   const waitForUrl = (url) =>
@@ -11,7 +18,7 @@ describe("Tutorial Puppeteer", () => {
   });
 
   beforeEach(async () => {
-    await page.goto(`${baseUrl}/register`);
+    await page.goto(`${DEMO_URL}/register`);
     await page.waitForSelector("button");
     await page.click("button");
   });
@@ -19,14 +26,14 @@ describe("Tutorial Puppeteer", () => {
   it("Test links between registration and login page", async () => {
     await page.waitForSelector("a.btn.btn-link");
     await page.click("a.btn.btn-link");
-    await waitForUrl(`${baseUrl}/login`);
+    await waitForUrl(`${DEMO_URL}/login`);
     await page.screenshot({ path: `${screenshotPath}/cancel.png` });
-    expect(page.url()).toEqual(`${baseUrl}/login`);
+    expect(page.url()).toEqual(`${DEMO_URL}/login`);
 
     await page.click("a.btn.btn-link");
-    await waitForUrl(`${baseUrl}/register`);
+    await waitForUrl(`${DEMO_URL}/register`);
     await page.screenshot({ path: `${screenshotPath}/register.png` });
-    expect(page.url()).toEqual(`${baseUrl}/register`);
+    expect(page.url()).toEqual(`${DEMO_URL}/register`);
   });
 
   it("Test form feedback", async () => {
@@ -38,10 +45,10 @@ describe("Tutorial Puppeteer", () => {
   });
 
   it("Create an user and login", async () => {
-    await page.type('input[formcontrolname="firstName"]', "Monitor");
-    await page.type('input[formcontrolname="lastName"]', "Pruebas");
-    await page.type('input[formcontrolname="username"]', "pruebas");
-    await page.type('input[formcontrolname="password"]', "MISO4208");
+    await page.type('input[formcontrolname="firstName"]', firstName);
+    await page.type('input[formcontrolname="lastName"]', lastName.join(" "));
+    await page.type('input[formcontrolname="username"]', username);
+    await page.type('input[formcontrolname="password"]', password);
 
     await page.click("button.btn.btn-primary");
 
@@ -50,11 +57,11 @@ describe("Tutorial Puppeteer", () => {
 
     await expect(page).toMatchTextContent("Registration successful");
 
-    await page.type('input[formcontrolname="username"]', "pruebas");
-    await page.type('input[formcontrolname="password"]', "MISO4208");
+    await page.type('input[formcontrolname="username"]', username);
+    await page.type('input[formcontrolname="password"]', password);
     await page.click("button.btn.btn-primary");
 
     await page.waitForSelector("h1");
-    await expect(page).toMatchElement("h1", { text: "Hi Monitor!" });
+    await expect(page).toMatchElement("h1", { text: `Hi ${firstName}!` });
   });
 });
