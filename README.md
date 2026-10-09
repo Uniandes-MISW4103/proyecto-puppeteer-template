@@ -47,6 +47,7 @@ Para pasar opciones a Jest ejecuten desde la carpeta del módulo, por ejemplo
 misw-4103-puppeteer/
 ├── .nvmrc
 ├── package.json
+├── abp.cjs                     # lee la configuración de la aplicación bajo pruebas (.env)
 ├── babel.config.js             # permite usar import/export en las pruebas
 ├── jest.config.js              # preset jest-puppeteer y variables globales
 ├── jest-puppeteer.config.js    # cómo se lanza el navegador
@@ -58,11 +59,26 @@ Las capturas de pantalla quedan en `test-results/` (en el `.gitignore`).
 
 ## Configuración
 
+La URL y el administrador de la aplicación bajo pruebas (ABP) están en el archivo `.env` de la raíz
+del repositorio, el mismo que usa `npm run abp:up` para desplegar Ghost. No los copien en el módulo:
+`abp.cjs` lee ese archivo. `jest.config.js` lo expone a las pruebas como variables globales: `baseUrl` es `ABP_URL` y
+`abp` contiene todas las variables:
+
+```javascript
+await page.goto(`${baseUrl}/ghost/`);
+await page.type("#identification", abp.ABP_ADMIN_EMAIL);
+await page.type("#password", abp.ABP_ADMIN_PASSWORD);
+```
+
+Las variables disponibles son `ABP_URL`, `ABP_RC_URL` (la versión de Ghost para regresión visual),
+`ABP_ADMIN_NAME`, `ABP_ADMIN_EMAIL` y `ABP_ADMIN_PASSWORD`. Una variable de entorno con el mismo
+nombre tiene prioridad sobre el `.env`. Fuera de un repositorio del proyecto (sin `.env`) se usan los
+valores por defecto de `abp.cjs`.
+
 - **`jest.config.js`**: usa el preset `jest-puppeteer`, registra las aserciones de
-  `expect-puppeteer` (`toMatchElement`, `toMatchTextContent`, …) y define variables globales para las
-  pruebas: `baseUrl` (por defecto el demo de StackBlitz; cámbienla por la URL de su aplicación, por
-  ejemplo `http://localhost:2368` para Ghost) y `screenshotPath` (`./test-results`). `testTimeout`
-  es de 60 s por prueba y por _hook_: el valor por defecto de Jest (5 s) es corto para pruebas E2E.
+  `expect-puppeteer` (`toMatchElement`, `toMatchTextContent`, …) y define las variables globales
+  `baseUrl`, `abp` y `screenshotPath` (`./test-results`). `testTimeout` es de 60 s por prueba y por
+  _hook_: el valor por defecto de Jest (5 s) es corto para pruebas E2E.
 - **`jest-puppeteer.config.js`**: lanza Chrome en modo headless salvo que `HEADLESS=false` (lo que
   hace `test:ui`) y crea un contexto de navegación aislado (incógnito) por archivo de pruebas.
 
@@ -70,13 +86,15 @@ Las capturas de pantalla quedan en `test-results/` (en el `.gitignore`).
 
 `__tests__/tutorial.spec.js` prueba el demo
 [angular-6-registration-login-example](https://angular-6-registration-login-example.stackblitz.io)
-alojado en StackBlitz. Antes de cada prueba abre `/register` y hace clic en el botón con el que
-StackBlitz inicia el proyecto. Las pruebas verifican:
+alojado en StackBlitz, no la ABP: muestra cómo usar las credenciales del `.env` sin resolver las
+pruebas del proyecto. Antes de cada prueba abre la página de registro del demo (con su URL completa)
+y hace clic en el botón con el que StackBlitz inicia el proyecto. Las pruebas verifican:
 
 1. La navegación entre registro e inicio de sesión (`/login` ↔ `/register`), esperando a que el
    _router_ de la aplicación cambie la URL antes de verificarla.
 2. Que enviar el formulario vacío muestra los 4 mensajes de validación.
-3. El registro de un usuario y el inicio de sesión con él ("Hi Monitor!").
+3. El registro de un usuario con el nombre, el correo (como usuario) y la contraseña de
+   `ABP_ADMIN_*`, y el inicio de sesión con él ("Hi Monitor!").
 
 ## Solución de problemas
 
